@@ -632,7 +632,7 @@ type GlobalConfig struct {
 	DingtalkCorpSecret  string   `yaml:"dingtalk_corp_secret,omitempty" json:"dingtalk_corp_secret,omitempty"`
 
 	// telephone
-	CloopenAccountSid   string `yaml:"cloopen_account_sig,omitempty"  json:"cloopen_account_sig,omitempty"`
+	CloopenAccountSid   string `yaml:"cloopen_account_sid,omitempty"  json:"cloopen_account_sid,omitempty"`
 	CloopenAccountToken string  `yaml:"cloopen_account_token,omitempty"  json:"cloopen_account_token,omitempty"`
 	CloopenAppID        string `yaml:"cloopen_app_id,omitempty"  json:"cloopen_app_id,omitempty"`
 
