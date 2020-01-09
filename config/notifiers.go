@@ -139,6 +139,31 @@ var (
 		Expire:   duration(1 * time.Hour),
 		HTML:     false,
 	}
+
+	// DefaultDingtalkConfig defines default values for Dingtalk configurations.
+	DefaultDingRobotConfig = DingRobotConfig{
+		NotifierConfig: NotifierConfig{
+			VSendResolved: false,
+		},
+		Title:   `{{ template "ding.link.title" . }}`,
+		Content: `{{ template "ding.link.content" . }}`,
+	}
+
+	// DefaultDingAppConfig defines default values for Dingtalk configurations.
+	DefaultDingAppConfig = DingAppConfig{
+		NotifierConfig: NotifierConfig{
+			VSendResolved: false,
+		},
+		Title:   `{{ template "ding.link.title" . }}`,
+		Content: `{{ template "ding.link.content" . }}`,
+	}
+
+	// DefaultTelephoneConfig defines default values for Telephone configurations.
+	DefaultTelephoneConfig = TelephoneConfig{
+		NotifierConfig: NotifierConfig{
+			VSendResolved: false,
+		},
+	}
 )
 
 // NotifierConfig contains base options common across all notifier configurations.
@@ -589,3 +614,85 @@ func (c *PushoverConfig) UnmarshalYAML(unmarshal func(interface{}) error) error 
 	}
 	return nil
 }
+
+type DingRobotConfig struct {
+	NotifierConfig `yaml:",inline" json:",inline"`
+
+	HTTPConfig *commoncfg.HTTPClientConfig `yaml:"http_config,omitempty" json:"http_config,omitempty"`
+
+	// Dingtalk bot address to notify.
+	WebhookURL string `yaml:"webhook_url,omitempty" json:"webhook_url,omitempty"`
+	Title      string `yaml:"title,omitempty"  json:"title,omitempty"`
+	Content    string `yaml:"content,omitempty"  json:"content,omitempty"`
+}
+
+// UnmarshalYAML implements the yaml.Unmarshaler interface.
+func (c *DingRobotConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	*c = DefaultDingRobotConfig
+	type plain DingRobotConfig
+	if err := unmarshal((*plain)(c)); err != nil {
+		return err
+	}
+	if c.WebhookURL == "" {
+		return fmt.Errorf("missing to in Dingtalk robot config")
+	}
+	return nil
+}
+
+type DingAppConfig struct {
+	NotifierConfig `yaml:",inline" json:",inline"`
+
+	// Dingtalk app message
+	CorpID   string     `yaml:"corp_id,omitempty"  json:"corp_id,omitempty"`
+	CorpSecret   string     `yaml:"corp_secret,omitempty"  json:"corp_secret,omitempty"`
+	AgentID   string     `yaml:"agent_id,omitempty"  json:"agent_id,omitempty"`
+
+
+	Operators []string   `yaml:"operators"  json:"operators"`
+	Title      string `yaml:"title,omitempty"  json:"title,omitempty"`
+	Content    string `yaml:"content,omitempty"  json:"content,omitempty"`
+}
+
+// UnmarshalYAML implements the yaml.Unmarshaler interface.
+func (c *DingAppConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	*c = DefaultDingAppConfig
+	type plain DingAppConfig
+	if err := unmarshal((*plain)(c)); err != nil {
+		return err
+	}
+	if len(c.Operators) == 0 {
+		return fmt.Errorf("missing to in Dingtalk app config")
+	}
+	return nil
+}
+
+// UnmarshalYAML implements the yaml.Unmarshaler interface.
+type TelephoneConfig struct {
+	NotifierConfig `yaml:",inline" json:",inline"`
+
+	AccountSid   string `yaml:"cloopen_account_sig,omitempty"  json:"cloopen_account_sig,omitempty"`
+	AccountToken string  `yaml:"cloopen_account_token,omitempty"  json:"cloopen_account_token,omitempty"`
+	AppID        string `yaml:"cloopen_app_id,omitempty"  json:"cloopen_app_id,omitempty"`
+
+	BaseURL      string `yaml:"cloopen_base_url,omitempty"  json:"cloopen_base_url,omitempty"`
+	Version      string `yaml:"cloopen_version,omitempty"  json:"cloopen_version,omitempty"`
+
+	Operators       []string   `yaml:"operators"  json:"operators"`
+	MediaTxt  string  `yaml:"media_txt,omitempty"  json:"media_txt,omitempty"`
+	DisplayNum   string `yaml:"display_num,omitempty"  json:"display_num,omitempty"`
+}
+
+
+// UnmarshalYAML implements the yaml.Unmarshaler interface.
+func (t *TelephoneConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	*t = DefaultTelephoneConfig
+	type plain TelephoneConfig
+	if err := unmarshal((*plain)(t)); err != nil {
+		return err
+	}
+	if len(t.Operators) == 0 {
+		return fmt.Errorf("missing to in telephone config")
+	}
+	return nil
+}
+

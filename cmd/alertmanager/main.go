@@ -16,6 +16,8 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/prometheus/alertmanager/notify/telephone"
+	"github.com/prometheus/alertmanager/notify/wechat"
 	"net"
 	"net/http"
 	"net/url"
@@ -47,15 +49,15 @@ import (
 	"github.com/prometheus/alertmanager/inhibit"
 	"github.com/prometheus/alertmanager/nflog"
 	"github.com/prometheus/alertmanager/notify"
+	"github.com/prometheus/alertmanager/notify/dingapp"
+	"github.com/prometheus/alertmanager/notify/dingrobot"
 	"github.com/prometheus/alertmanager/notify/email"
 	"github.com/prometheus/alertmanager/notify/hipchat"
 	"github.com/prometheus/alertmanager/notify/opsgenie"
 	"github.com/prometheus/alertmanager/notify/pagerduty"
-	"github.com/prometheus/alertmanager/notify/pushover"
 	"github.com/prometheus/alertmanager/notify/slack"
 	"github.com/prometheus/alertmanager/notify/victorops"
 	"github.com/prometheus/alertmanager/notify/webhook"
-	"github.com/prometheus/alertmanager/notify/wechat"
 	"github.com/prometheus/alertmanager/provider/mem"
 	"github.com/prometheus/alertmanager/silence"
 	"github.com/prometheus/alertmanager/template"
@@ -163,9 +165,16 @@ func buildReceiverIntegrations(nc *config.Receiver, tmpl *template.Template, log
 	for i, c := range nc.VictorOpsConfigs {
 		add("victorops", i, c, func(l log.Logger) (notify.Notifier, error) { return victorops.New(c, tmpl, l) })
 	}
-	for i, c := range nc.PushoverConfigs {
-		add("pushover", i, c, func(l log.Logger) (notify.Notifier, error) { return pushover.New(c, tmpl, l) })
+	for i, c := range nc.DingRobotConfigs {
+		add("dingrobot", i, c, func(l log.Logger) (notify.Notifier, error) { return dingrobot.New(c, tmpl, l) })
 	}
+	for i, c := range nc.DingAppConfigs {
+		add("dingapp", i, c, func(l log.Logger) (notify.Notifier, error) { return dingapp.New(c, tmpl, l) })
+	}
+	for i, c := range nc.TelephoneConfigs {
+		add("telephone", i, c, func(l log.Logger) (notify.Notifier, error) { return telephone.New(c, l) })
+	}
+
 	if errs.Len() > 0 {
 		return nil, &errs
 	}

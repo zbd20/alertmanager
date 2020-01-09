@@ -414,6 +414,48 @@ func (c *Config) UnmarshalYAML(unmarshal func(interface{}) error) error {
 				voc.APIKey = c.Global.VictorOpsAPIKey
 			}
 		}
+
+		for _, dc := range rcv.DingRobotConfigs {
+			if dc.HTTPConfig == nil {
+				dc.HTTPConfig = c.Global.HTTPConfig
+			}
+		}
+		for _, ac := range rcv.DingAppConfigs {
+			if ac.AgentID == "" {
+				ac.AgentID = c.Global.DingtalkAgentID
+			}
+			if ac.CorpID == "" {
+				ac.CorpID = c.Global.DingtalkCorpID
+			}
+			if ac.CorpSecret == "" {
+				ac.CorpSecret = c.Global.DingtalkCorpSecret
+			}
+		}
+		for _, tc := range rcv.TelephoneConfigs {
+			if tc.AccountSid == "" {
+				tc.AccountSid = c.Global.CloopenAccountSid
+			}
+			if tc.AccountToken == "" {
+				tc.AccountToken = c.Global.CloopenAccountToken
+			}
+			if tc.MediaTxt == "" {
+				tc.MediaTxt = c.Global.TelephoneMediaTxt
+			}
+			if tc.DisplayNum == "" {
+				tc.DisplayNum = c.Global.CloopenDisplayNum
+			}
+			if tc.AppID == "" {
+				tc.AppID = c.Global.CloopenAppID
+			}
+			// no use
+			if tc.BaseURL == "" {
+				tc.BaseURL = c.Global.CloopenBaseURL
+			}
+			// no use
+			if tc.Version == "" {
+				tc.Version = c.Global.CloopenVersion
+			}
+		}
 		names[rcv.Name] = struct{}{}
 	}
 
@@ -583,6 +625,26 @@ type GlobalConfig struct {
 	WeChatAPICorpID  string     `yaml:"wechat_api_corp_id,omitempty" json:"wechat_api_corp_id,omitempty"`
 	VictorOpsAPIURL  *URL       `yaml:"victorops_api_url,omitempty" json:"victorops_api_url,omitempty"`
 	VictorOpsAPIKey  Secret     `yaml:"victorops_api_key,omitempty" json:"victorops_api_key,omitempty"`
+
+	// Dingtalk
+	DingtalkAgentID  string   `yaml:"dingtalk_agent_id,omitempty" json:"dingtalk_agent_id,omitempty"`
+	DingtalkCorpID  string   `yaml:"dingtalk_corp_id,omitempty" json:"dingtalk_corp_id,omitempty"`
+	DingtalkCorpSecret  string   `yaml:"dingtalk_corp_secret,omitempty" json:"dingtalk_corp_secret,omitempty"`
+
+	// telephone
+	CloopenAccountSid   string `yaml:"cloopen_account_sig,omitempty"  json:"cloopen_account_sig,omitempty"`
+	CloopenAccountToken string  `yaml:"cloopen_account_token,omitempty"  json:"cloopen_account_token,omitempty"`
+	CloopenAppID        string `yaml:"cloopen_app_id,omitempty"  json:"cloopen_app_id,omitempty"`
+
+	// option
+	CloopenBaseURL      string `yaml:"cloopen_base_url,omitempty"  json:"cloopen_base_url,omitempty"`
+	// option
+	CloopenVersion      string `yaml:"cloopen_version,omitempty"  json:"cloopen_version,omitempty"`
+
+	TelephoneMediaTxt  string  `yaml:"telephone_media_txt,omitempty"  json:"telephone_media_txt,omitempty"`
+	// option
+	CloopenDisplayNum   string `yaml:"cloopen_display_num,omitempty"  json:"cloopen_display_num,omitempty"`
+
 }
 
 // UnmarshalYAML implements the yaml.Unmarshaler interface for GlobalConfig.
@@ -715,6 +777,9 @@ type Receiver struct {
 	WechatConfigs    []*WechatConfig    `yaml:"wechat_configs,omitempty" json:"wechat_configs,omitempty"`
 	PushoverConfigs  []*PushoverConfig  `yaml:"pushover_configs,omitempty" json:"pushover_configs,omitempty"`
 	VictorOpsConfigs []*VictorOpsConfig `yaml:"victorops_configs,omitempty" json:"victorops_configs,omitempty"`
+	DingRobotConfigs  []*DingRobotConfig  `yaml:"dingrobot_configs,omitempty" json:"dingrobot_configs,omitempty"`
+	DingAppConfigs  []*DingAppConfig  `yaml:"dingapp_configs,omitempty" json:"dingApp_configs,omitempty"`
+	TelephoneConfigs []*TelephoneConfig `yaml:"telephone_configs,omitempty" json:"telephone_configs,omitempty"`
 }
 
 // UnmarshalYAML implements the yaml.Unmarshaler interface for Receiver.

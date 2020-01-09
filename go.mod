@@ -14,6 +14,7 @@ require (
 	github.com/gogo/protobuf v1.2.2-0.20190730201129-28a6bbf47e48
 	github.com/hashicorp/go-sockaddr v1.0.2
 	github.com/hashicorp/memberlist v0.1.4
+	github.com/iyacontrol/godingtalk v1.1.0
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/kylelemons/godebug v0.0.0-20160406211939-eadb3ce320cb
 	github.com/matttproud/golang_protobuf_extensions v1.0.1
