@@ -20,7 +20,7 @@ import (
 )
 
 var (
-	baseURL = "https://app.cloopen.com"
+	baseURL = "https://app.cloopen.com:8883"
 	bersion    = "2013-12-26"
 	timeFormat = "20060102150405"
 )
@@ -41,6 +41,8 @@ func (t *Telephone) Notify(ctx context.Context, as ...*types.Alert) (bool, error
 		AccountSid:   t.conf.AccountSid,
 		AppID:        t.conf.AppID,
 		AccountToken: t.conf.AccountToken,
+
+		logger:       t.logger,
 	}
 
 	for _, to := range  t.conf.Operators {
@@ -69,6 +71,8 @@ type Cloopen struct {
 
 	BaseURL      string
 	Version      string
+
+	logger log.Logger
 }
 
 
@@ -135,6 +139,7 @@ func (srv *Cloopen) Request(url, body string, headers map[string]string) (httpCo
 	defer resp.Body.Close()
 
 	httpContent, err := ioutil.ReadAll(resp.Body)
+	level.Debug(srv.logger).Log("resp content", string(httpContent))
 	return string(httpContent), err
 }
 
@@ -150,7 +155,7 @@ func (srv *Cloopen) Headers() (headers map[string]string) {
 
 // Body Body 构建
 func (srv *Cloopen) Body(req *Request) (body string) {
-	s := `{"to": "%s", "displayNum": %s, "mediaTxt": "%s", "appId": "%s"}`
+	s := `{"to": "%s", "displayNum": "%s", "mediaTxt": "%s", "appId": "%s","playTimes": "3"}`
 	return fmt.Sprintf(s, req.To, req.DisplayNum, req.MediaTxt, srv.AppID)
 }
 

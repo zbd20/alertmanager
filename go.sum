@@ -138,8 +138,8 @@ github.com/hashicorp/golang-lru v0.5.1/go.mod h1:/m3WP610KZHVQ1SGc6re/UDhFvYD7pJ
 github.com/hashicorp/memberlist v0.1.4 h1:gkyML/r71w3FL8gUi74Vk76avkj/9lYAY9lvg0OcoGs=
 github.com/hashicorp/memberlist v0.1.4/go.mod h1:ajVTdAv/9Im8oMAAj5G31PhhMCZJV2pPBoIllUwCN7I=
 github.com/ipandtcp/godingtalk v0.0.0-20180410032244-ca3d6ac197fb/go.mod h1:3umLciE1jBnh2LgrL15R2zbEe+HVPRZXnlSjjb/dYiw=
-github.com/iyacontrol/godingtalk v1.1.0 h1:hwi82P+eHmzMbRmaBqHGLmw3HkFdGrZyG5V069Pzjwc=
-github.com/iyacontrol/godingtalk v1.1.0/go.mod h1:zypD2Uhz/eaQGzc5Qg+6Mpc6yv5Tt8EUhzTukKQ6vNA=
+github.com/iyacontrol/godingtalk v1.1.1 h1:4H3WPIP7FbbGGVapG/CbSwb+W6xMfb9E5By8QwV+OCc=
+github.com/iyacontrol/godingtalk v1.1.1/go.mod h1:zypD2Uhz/eaQGzc5Qg+6Mpc6yv5Tt8EUhzTukKQ6vNA=
 github.com/jessevdk/go-flags v1.4.0 h1:4IU2WS7AumrZ/40jfhf4QVDMsQwqA7VEHozFRrGARJA=
 github.com/jessevdk/go-flags v1.4.0/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
 github.com/json-iterator/go v1.1.6/go.mod h1:+SdeFBvtyEkXs7REEP0seUULqWtbJapLOCVDaaPEHmU=

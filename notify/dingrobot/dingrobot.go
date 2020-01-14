@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/go-kit/kit/log/level"
 	"net/http"
 	"context"
 
@@ -41,7 +42,7 @@ func New(c *config.DingRobotConfig, t *template.Template, l log.Logger) (*DingRo
 
 // Notify implements the Notifier interface.
 func (d *DingRobot) Notify(ctx context.Context, as ...*types.Alert) (bool, error) {
-
+	level.Debug(d.logger).Log("start to send ding robot")
 	var (
 		tmplErr error
 		data    = notify.GetTemplateData(ctx, d.tmpl, as, d.logger)

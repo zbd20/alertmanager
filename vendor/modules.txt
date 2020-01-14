@@ -106,7 +106,7 @@ github.com/hashicorp/go-sockaddr
 github.com/hashicorp/golang-lru/simplelru
 # github.com/hashicorp/memberlist v0.1.4
 github.com/hashicorp/memberlist
-# github.com/iyacontrol/godingtalk v1.1.0
+# github.com/iyacontrol/godingtalk v1.1.1
 github.com/iyacontrol/godingtalk
 # github.com/jessevdk/go-flags v1.4.0
 github.com/jessevdk/go-flags

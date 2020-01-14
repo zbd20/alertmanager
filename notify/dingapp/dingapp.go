@@ -1,18 +1,18 @@
 package dingapp
 
-import  (
-	"fmt"
+import (
 	"context"
-	"os"
+	"fmt"
 	"strings"
+	"time"
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
+	dingtalk "github.com/iyacontrol/godingtalk"
 	"github.com/prometheus/alertmanager/config"
 	"github.com/prometheus/alertmanager/notify"
 	"github.com/prometheus/alertmanager/template"
 	"github.com/prometheus/alertmanager/types"
-	dingtalk "github.com/iyacontrol/godingtalk"
 )
 
 type DingApp struct {
@@ -34,13 +34,13 @@ func (d *DingApp) Notify(ctx context.Context, as ...*types.Alert) (bool, error) 
 		data    = notify.GetTemplateData(ctx, d.tmpl, as, d.logger)
 		tmpl    = notify.TmplText(d.tmpl, data, &tmplErr)
 		title   = tmpl(d.conf.Title)
-		content = tmpl(d.conf.Content)
+		content = tmpl(d.conf.Content) + "\n" + time.Now().Format("2006-01-02 15:04:05")
 	)
 	if tmplErr != nil {
 		return false, fmt.Errorf("failed to template 'title' or 'content': %v", tmplErr)
 	}
 
-	client := dingtalk.NewDingTalkClient(os.Getenv("corpid"), os.Getenv("corpsecret"))
+	client := dingtalk.NewDingTalkClient(d.conf.CorpID, d.conf.CorpSecret)
 	client.RefreshAccessToken()
 
 	toUser := strings.Join(d.conf.Operators, "|")

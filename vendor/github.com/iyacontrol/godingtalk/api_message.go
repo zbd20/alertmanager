@@ -34,8 +34,8 @@ func (c *DingTalkClient) SendAppMarkDownMessage(agentID string, touser string, m
 		"agentid": agentID,
 		"msgtype": "markdown",
 		"markdown": map[string]interface{}{
-			"content": msg,
-			"title":   title,
+			"text":  msg,
+			"title": title,
 		},
 	}
 	err := c.httpRPC("message/send", nil, request, &data)
