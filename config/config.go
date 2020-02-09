@@ -432,28 +432,52 @@ func (c *Config) UnmarshalYAML(unmarshal func(interface{}) error) error {
 			}
 		}
 		for _, tc := range rcv.TelephoneConfigs {
-			if tc.AccountSid == "" {
-				tc.AccountSid = c.Global.CloopenAccountSid
+			/*
+				// 容联云
+				if tc.AccountSid == "" {
+					tc.AccountSid = c.Global.CloopenAccountSid
+				}
+				if tc.AccountToken == "" {
+					tc.AccountToken = c.Global.CloopenAccountToken
+				}
+				if tc.MediaTxt == "" {
+					tc.MediaTxt = c.Global.TelephoneMediaTxt
+				}
+				if tc.DisplayNum == "" {
+					tc.DisplayNum = c.Global.CloopenDisplayNum
+				}
+				if tc.AppID == "" {
+					tc.AppID = c.Global.CloopenAppID
+				}
+				// no use
+				if tc.BaseURL == "" {
+					tc.BaseURL = c.Global.CloopenBaseURL
+				}
+				// no use
+				if tc.Version == "" {
+					tc.Version = c.Global.CloopenVersion
+				}
+			*/
+			if tc.AppKey == "" {
+				tc.AppKey = c.Global.HWCAppKey
 			}
-			if tc.AccountToken == "" {
-				tc.AccountToken = c.Global.CloopenAccountToken
+			if tc.AppSecret == "" {
+				tc.AppSecret = c.Global.HWCAppSecret
 			}
-			if tc.MediaTxt == "" {
-				tc.MediaTxt = c.Global.TelephoneMediaTxt
+			if tc.UserName == "" {
+				tc.UserName = c.Global.HWCUserName
 			}
-			if tc.DisplayNum == "" {
-				tc.DisplayNum = c.Global.CloopenDisplayNum
+			if tc.Authorization == "" {
+				tc.Authorization = c.Global.HWCAuthorization
 			}
-			if tc.AppID == "" {
-				tc.AppID = c.Global.CloopenAppID
-			}
-			// no use
 			if tc.BaseURL == "" {
-				tc.BaseURL = c.Global.CloopenBaseURL
+				tc.BaseURL = c.Global.HWCBaseURL
 			}
-			// no use
-			if tc.Version == "" {
-				tc.Version = c.Global.CloopenVersion
+			if tc.DisplayNumber == "" {
+				tc.DisplayNumber = c.Global.HWCDisplayNumber
+			}
+			if tc.TemplateId == "" {
+				tc.TemplateId = c.Global.HWCTemplateId
 			}
 		}
 		names[rcv.Name] = struct{}{}
@@ -627,24 +651,32 @@ type GlobalConfig struct {
 	VictorOpsAPIKey  Secret     `yaml:"victorops_api_key,omitempty" json:"victorops_api_key,omitempty"`
 
 	// Dingtalk
-	DingtalkAgentID  string   `yaml:"dingtalk_agent_id,omitempty" json:"dingtalk_agent_id,omitempty"`
-	DingtalkCorpID  string   `yaml:"dingtalk_corp_id,omitempty" json:"dingtalk_corp_id,omitempty"`
-	DingtalkCorpSecret  string   `yaml:"dingtalk_corp_secret,omitempty" json:"dingtalk_corp_secret,omitempty"`
+	DingtalkAgentID    string `yaml:"dingtalk_agent_id,omitempty" json:"dingtalk_agent_id,omitempty"`
+	DingtalkCorpID     string `yaml:"dingtalk_corp_id,omitempty" json:"dingtalk_corp_id,omitempty"`
+	DingtalkCorpSecret string `yaml:"dingtalk_corp_secret,omitempty" json:"dingtalk_corp_secret,omitempty"`
 
 	// telephone
 	CloopenAccountSid   string `yaml:"cloopen_account_sid,omitempty"  json:"cloopen_account_sid,omitempty"`
-	CloopenAccountToken string  `yaml:"cloopen_account_token,omitempty"  json:"cloopen_account_token,omitempty"`
+	CloopenAccountToken string `yaml:"cloopen_account_token,omitempty"  json:"cloopen_account_token,omitempty"`
 	CloopenAppID        string `yaml:"cloopen_app_id,omitempty"  json:"cloopen_app_id,omitempty"`
 
 	// option
-	CloopenBaseURL      string `yaml:"cloopen_base_url,omitempty"  json:"cloopen_base_url,omitempty"`
+	CloopenBaseURL string `yaml:"cloopen_base_url,omitempty"  json:"cloopen_base_url,omitempty"`
 	// option
-	CloopenVersion      string `yaml:"cloopen_version,omitempty"  json:"cloopen_version,omitempty"`
+	CloopenVersion string `yaml:"cloopen_version,omitempty"  json:"cloopen_version,omitempty"`
 
-	TelephoneMediaTxt  string  `yaml:"telephone_media_txt,omitempty"  json:"telephone_media_txt,omitempty"`
+	TelephoneMediaTxt string `yaml:"telephone_media_txt,omitempty"  json:"telephone_media_txt,omitempty"`
 	// option
-	CloopenDisplayNum   string `yaml:"cloopen_display_num,omitempty"  json:"cloopen_display_num,omitempty"`
+	CloopenDisplayNum string `yaml:"cloopen_display_num,omitempty"  json:"cloopen_display_num,omitempty"`
 
+	// HWC
+	HWCAppKey        string `yaml:"hwc_app_key,omitempty"  json:"hwc_app_key,omitempty"`
+	HWCAppSecret     string `yaml:"hwc_app_secret,omitempty"  json:"hwc_app_secret,omitempty"`
+	HWCUserName      string `yaml:"hwc_user_name,omitempty"  json:"hwc_user_name,omitempty"`
+	HWCAuthorization string `yaml:"hwc_authorization,omitempty"  json:"hwc_authorization,omitempty"`
+	HWCBaseURL       string `yaml:"hwc_base_url,omitempty"  json:"hwc_base_url,omitempty"`
+	HWCDisplayNumber string `yaml:"hwc_display_number,omitempty"  json:"hwc_display_number,omitempty"`
+	HWCTemplateId    string `yaml:"hwc_template_id,omitempty"  json:"hwc_template_id,omitempty"`
 }
 
 // UnmarshalYAML implements the yaml.Unmarshaler interface for GlobalConfig.
@@ -777,9 +809,9 @@ type Receiver struct {
 	WechatConfigs    []*WechatConfig    `yaml:"wechat_configs,omitempty" json:"wechat_configs,omitempty"`
 	PushoverConfigs  []*PushoverConfig  `yaml:"pushover_configs,omitempty" json:"pushover_configs,omitempty"`
 	VictorOpsConfigs []*VictorOpsConfig `yaml:"victorops_configs,omitempty" json:"victorops_configs,omitempty"`
-	DingRobotConfigs  []*DingRobotConfig  `yaml:"dingrobot_configs,omitempty" json:"dingrobot_configs,omitempty"`
-	DingAppConfigs  []*DingAppConfig  `yaml:"dingapp_configs,omitempty" json:"dingApp_configs,omitempty"`
-	TelephoneConfigs []*TelephoneConfig `yaml:"telephone_configs,omitempty" json:"telephone_configs,omitempty"`
+	DingRobotConfigs []*DingRobotConfig `yaml:"dingrobot_configs,omitempty" json:"dingrobot_configs,omitempty"`
+	DingAppConfigs   []*DingAppConfig   `yaml:"dingapp_configs,omitempty" json:"dingApp_configs,omitempty"`
+	TelephoneConfigs []*HWCConfig       `yaml:"telephone_configs,omitempty" json:"telephone_configs,omitempty"`
 }
 
 // UnmarshalYAML implements the yaml.Unmarshaler interface for Receiver.

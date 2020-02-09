@@ -48,16 +48,17 @@ alerts1='[
     "labels": {
        "alertname": "DiskRunningFull",
        "group": "SGT",
-       "instance": "example3",
-       "severity": "critical"
+       "command_group": "versionManagerService",
+       "severity": "2"
      }
   },
   {
     "labels": {
        "alertname": "DiskRunningFull",
        "group": "SGT",
+       "command_group": "versionManagerService",
        "instance": "example3",
-       "severity": "warning"
+       "severity": "1"
      }
   }
 ]'

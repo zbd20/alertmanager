@@ -1,185 +1,138 @@
 package telephone
 
 import (
-	"crypto/md5"
-	"encoding/base64"
-	"encoding/hex"
+	"context"
 	"encoding/json"
-	"github.com/go-kit/kit/log/level"
-	"io/ioutil"
+	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
-	"fmt"
-	"errors"
-	"context"
 
 	"github.com/go-kit/kit/log"
 	"github.com/prometheus/alertmanager/config"
+	"github.com/prometheus/alertmanager/notify"
 	"github.com/prometheus/alertmanager/types"
+	commoncfg "github.com/prometheus/common/config"
 )
 
-var (
-	baseURL = "https://app.cloopen.com:8883"
-	bersion    = "2013-12-26"
-	timeFormat = "20060102150405"
-)
-
-type Telephone struct {
-	conf *config.TelephoneConfig
+// Notifier implements a Notifier for voice notifications current.
+type Notifier struct {
+	conf   *config.HWCConfig
 	logger log.Logger
+	client *http.Client
+
+	accessToken   string
+	refreshToken  string
+	expiresIn     int64
+	accessTokenAt time.Time
 }
 
-
-func New(c *config.TelephoneConfig, l log.Logger)  (*Telephone, error) {
-	return &Telephone{conf: c, logger: l}, nil
+type TokenResult struct {
+	Resultcode   string `json:"resultcode,omitempty"`
+	Resultdesc   string `json:"resultdesc,omitempty"`
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+	ExpiresIn    string `json:"expires_in"`
 }
 
-// Notify implements the Notifier interface.
-func (t *Telephone) Notify(ctx context.Context, as ...*types.Alert) (bool, error) {
-	cloopen := &Cloopen{
-		AccountSid:   t.conf.AccountSid,
-		AppID:        t.conf.AppID,
-		AccountToken: t.conf.AccountToken,
-
-		logger:       t.logger,
-	}
-
-	for _, to := range  t.conf.Operators {
-		req := &Request{
-			To:       to,
-			MediaTxt: t.conf.MediaTxt,
-			DisplayNum: t.conf.DisplayNum,
-		}
-		_, err := cloopen.Send(req)
-		if err != nil {
-			level.Debug(t.logger).Log("send telephone failure to", to)
-			level.Debug(t.logger).Log("send telephone failure err", err.Error())
-			return true, err
-		}
-	}
-
-
-	return false, nil
-
-}
-
-type Cloopen struct {
-	AccountSid   string
-	AccountToken string
-	AppID        string
-
-	BaseURL      string
-	Version      string
-
-	logger log.Logger
-}
-
-
-
-type Request struct {
-	To       string   // 被叫号码，被叫为座机时需要添加区号，如：01052823298；被叫为分机时分机号由‘-’隔开，如：01052823298-3627
-	MediaTxt  string
-	DisplayNum   string
-}
-
-
-// Send 获取所有消息事件信息
-func (srv *Cloopen) Send(req *Request) (valid bool, err error) {
-	// 请求参数构建
-	url := srv.URL()
-	body := srv.Body(req)
-	headers := srv.Headers()
-	httpContentString, err := srv.Request(url, body, headers)
+// New returns a new HuaWeiCloud notifier.
+func New(c *config.HWCConfig, l log.Logger) (*Notifier, error) {
+	client, err := commoncfg.NewClientFromConfig(*c.HTTPConfig, "telephone", false)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
-	// 返回数据处理
-	valid, err = srv.Response(httpContentString)
+
+	// initial hwc access token
+	url := fmt.Sprintf("%s/rest/fastlogin/v1.0?app_key=%s&username=%s", c.BaseURL, c.AppKey, c.UserName)
+	req, err := http.NewRequest(http.MethodPost, url, nil)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
-	return valid, err
-}
-
-// Response 返回数据处理
-func (srv *Cloopen) Response(httpContentString string) (valid bool, err error) {
-	// res 返回请求
-	res := map[string]interface{}{}
-	err = json.Unmarshal([]byte(httpContentString), &res)
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+	req.Header.Set("Authorization", c.Authorization)
+	resp, err := client.Do(req)
 	if err != nil {
-		return false, err
-	}
-	if res["statusCode"].(string) != "000000" {
-		return false, errors.New(res["statusMsg"].(string))
-	}
-	return true, err
-}
-
-// Request Request 请求
-func (srv *Cloopen) Request(url, body string, headers map[string]string) (httpContentString string, err error) {
-	// http-Client
-	client := &http.Client{}
-	// request
-	request, _ := http.NewRequest("POST", url, strings.NewReader(body))
-
-	// add headers
-	//request.Header.Set("Accept", headers["Accept"])
-	//request.Header.Set("Content-Type", headers["Content-Type"])
-	//request.Header.Set("Authorization", headers["Authorization"])
-
-	for k, v := range headers {
-		request.Header.Set(k, v)
-	}
-	// post-request
-	resp, err := client.Do(request)
-	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
-	httpContent, err := ioutil.ReadAll(resp.Body)
-	level.Debug(srv.logger).Log("resp content", string(httpContent))
-	return string(httpContent), err
-}
-
-// Headers Headers 构建
-func (srv *Cloopen) Headers() (headers map[string]string) {
-	// format timestamp
-	batch := time.Now().Format(timeFormat)
-	// auth
-	src := srv.AccountSid + ":" + batch
-	auth := base64.StdEncoding.EncodeToString([]byte(src))
-	return map[string]string{"Accept": "application/json", "Content-Type": "application/json;charset=utf-8", "Authorization": auth}
-}
-
-// Body Body 构建
-func (srv *Cloopen) Body(req *Request) (body string) {
-	s := `{"to": "%s", "displayNum": "%s", "mediaTxt": "%s", "appId": "%s","playTimes": "3"}`
-	return fmt.Sprintf(s, req.To, req.DisplayNum, req.MediaTxt, srv.AppID)
-}
-
-// URL url 构建
-func (srv *Cloopen) URL() (url string) {
-	if srv.BaseURL == "" {
-		srv.BaseURL = baseURL
+	if resp.StatusCode != http.StatusOK {
+		if resp.StatusCode/100 != 2 {
+			return nil, fmt.Errorf("unexpected status code %v from %s", resp.StatusCode, url)
+		}
 	}
-	if srv.Version == "" {
-		srv.Version = bersion
+	var tokenResult TokenResult
+	if err := json.NewDecoder(resp.Body).Decode(&tokenResult); err != nil {
+		return nil, err
 	}
-	// format timestamp
-	batch := time.Now().Format(timeFormat)
 
-	// sign
-	sign := srv.AccountSid + srv.AccountToken + batch
+	n := Notifier{conf: c, logger: l, client: client}
+	n.accessToken = tokenResult.AccessToken
+	n.expiresIn, _ = strconv.ParseInt(tokenResult.ExpiresIn, 10, 64)
+	n.refreshToken = tokenResult.RefreshToken
+	n.accessTokenAt = time.Now()
 
-	// md5
-	MD5 := md5.New()
-	MD5.Write([]byte(sign))
-	lowerSign := hex.EncodeToString(MD5.Sum(nil))
+	return &n, nil
+}
 
-	// lowerSign to upperSign
-	upperSign := strings.ToUpper(lowerSign)
-	// combine url
-	return strings.Join([]string{srv.BaseURL, "/", srv.Version, "/Accounts/", srv.AccountSid, "/Calls/LandingCalls?sig=", upperSign}, "")
+// Notify implements the Notifier interface.
+func (n *Notifier) Notify(ctx context.Context, as ...*types.Alert) (bool, error) {
+	// Refresh AccessToken over 47 hours
+	if n.accessToken == "" || time.Since(n.accessTokenAt) > 47*time.Hour {
+		url := fmt.Sprintf("%s/omp/oauth/refresh?app_key=%s&app_secret=%s&grant_type=refresh_token&refresh_token=%s", n.conf.BaseURL, n.conf.AppKey, n.conf.AppSecret, n.refreshToken)
+		req, err := http.NewRequest(http.MethodPost, url, nil)
+		if err != nil {
+			return true, err
+		}
+		req.Header.Set("Accept", "application/json")
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+
+		resp, err := n.client.Do(req.WithContext(ctx))
+		if err != nil {
+			return true, notify.RedactURL(err)
+		}
+		defer notify.Drain(resp)
+
+		if resp.StatusCode != http.StatusOK {
+			if resp.StatusCode/100 != 2 {
+				return true, fmt.Errorf("unexpected status code %v from %s", resp.StatusCode, url)
+			}
+		}
+		var tokenResult TokenResult
+		if err := json.NewDecoder(resp.Body).Decode(&tokenResult); err != nil {
+			return true, err
+		}
+
+		// Cache accessToken
+		n.accessToken = tokenResult.AccessToken
+		n.expiresIn, _ = strconv.ParseInt(tokenResult.ExpiresIn, 10, 64)
+		n.refreshToken = tokenResult.RefreshToken
+		n.accessTokenAt = time.Now()
+	}
+
+	// send voice notify
+	url := fmt.Sprintf("%s/rest/httpsessions/callnotify/%s?app_key=%s&access_token=%s", n.conf.BaseURL, "v2.0", n.conf.AppKey, n.accessToken)
+	for _, operator := range n.conf.Operators {
+		s := `{
+			"displayNbr": "%s", 
+			"calleeNbr": "+86%s", 
+			"playInfoList": [{"templateId":"%s", "templateParas":["1"], "collectInd": 0}]
+		}`
+		body := fmt.Sprintf(s, n.conf.DisplayNumber, operator, n.conf.TemplateId)
+		req, err := http.NewRequest(http.MethodPost, url, strings.NewReader(body))
+		if err != nil {
+			return true, err
+		}
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, err := n.client.Do(req.WithContext(ctx))
+		if err != nil {
+			return true, err
+		}
+		defer notify.Drain(resp)
+	}
+
+	return false, nil
 }

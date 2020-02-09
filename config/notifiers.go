@@ -164,6 +164,13 @@ var (
 			VSendResolved: false,
 		},
 	}
+
+	// DefaultTelephoneConfig defines default values for Telephone configurations.
+	DefaultHWCConfig = HWCConfig{
+		NotifierConfig: NotifierConfig{
+			VSendResolved: false,
+		},
+	}
 )
 
 // NotifierConfig contains base options common across all notifier configurations.
@@ -643,14 +650,13 @@ type DingAppConfig struct {
 	NotifierConfig `yaml:",inline" json:",inline"`
 
 	// Dingtalk app message
-	CorpID   string     `yaml:"corp_id,omitempty"  json:"corp_id,omitempty"`
-	CorpSecret   string     `yaml:"corp_secret,omitempty"  json:"corp_secret,omitempty"`
-	AgentID   string     `yaml:"agent_id,omitempty"  json:"agent_id,omitempty"`
+	CorpID     string `yaml:"corp_id,omitempty"  json:"corp_id,omitempty"`
+	CorpSecret string `yaml:"corp_secret,omitempty"  json:"corp_secret,omitempty"`
+	AgentID    string `yaml:"agent_id,omitempty"  json:"agent_id,omitempty"`
 
-
-	Operators []string   `yaml:"operators"  json:"operators"`
-	Title      string `yaml:"title,omitempty"  json:"title,omitempty"`
-	Content    string `yaml:"content,omitempty"  json:"content,omitempty"`
+	Operators []string `yaml:"operators"  json:"operators"`
+	Title     string   `yaml:"title,omitempty"  json:"title,omitempty"`
+	Content   string   `yaml:"content,omitempty"  json:"content,omitempty"`
 }
 
 // UnmarshalYAML implements the yaml.Unmarshaler interface.
@@ -670,18 +676,17 @@ func (c *DingAppConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
 type TelephoneConfig struct {
 	NotifierConfig `yaml:",inline" json:",inline"`
 
-	AccountSid   string `yaml:"cloopen_account_sig,omitempty"  json:"cloopen_account_sig,omitempty"`
-	AccountToken string  `yaml:"cloopen_account_token,omitempty"  json:"cloopen_account_token,omitempty"`
+	AccountSid   string `yaml:"cloopen_account_sid,omitempty"  json:"cloopen_account_sid,omitempty"`
+	AccountToken string `yaml:"cloopen_account_token,omitempty"  json:"cloopen_account_token,omitempty"`
 	AppID        string `yaml:"cloopen_app_id,omitempty"  json:"cloopen_app_id,omitempty"`
 
-	BaseURL      string `yaml:"cloopen_base_url,omitempty"  json:"cloopen_base_url,omitempty"`
-	Version      string `yaml:"cloopen_version,omitempty"  json:"cloopen_version,omitempty"`
+	BaseURL string `yaml:"cloopen_base_url,omitempty"  json:"cloopen_base_url,omitempty"`
+	Version string `yaml:"cloopen_version,omitempty"  json:"cloopen_version,omitempty"`
 
-	Operators       []string   `yaml:"operators"  json:"operators"`
-	MediaTxt  string  `yaml:"media_txt,omitempty"  json:"media_txt,omitempty"`
-	DisplayNum   string `yaml:"display_num,omitempty"  json:"display_num,omitempty"`
+	Operators  []string `yaml:"operators"  json:"operators"`
+	MediaTxt   string   `yaml:"media_txt,omitempty"  json:"media_txt,omitempty"`
+	DisplayNum string   `yaml:"display_num,omitempty"  json:"display_num,omitempty"`
 }
-
 
 // UnmarshalYAML implements the yaml.Unmarshaler interface.
 func (t *TelephoneConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
@@ -696,3 +701,33 @@ func (t *TelephoneConfig) UnmarshalYAML(unmarshal func(interface{}) error) error
 	return nil
 }
 
+type HWCConfig struct {
+	NotifierConfig `yaml:",inline" json:",inline"`
+
+	HTTPConfig *commoncfg.HTTPClientConfig `yaml:"http_config,omitempty" json:"http_config,omitempty"`
+
+	AppKey        string `yaml:"app_key,omitempty"  json:"app_key,omitempty"`
+	AppSecret     string `yaml:"app_secret,omitempty"  json:"app_secret,omitempty"`
+	UserName      string `yaml:"user_name,omitempty"  json:"user_name,omitempty"`
+	Authorization string `yaml:"authorization,omitempty"  json:"authorization,omitempty"`
+	BaseURL       string `yaml:"base_url,omitempty"  json:"base_url,omitempty"`
+
+	Operators     []string `yaml:"operators"  json:"operators"`
+	DisplayNumber string   `yaml:"display_number"  json:"display_number"`
+	TemplateId    string   `yaml:"template_id"  json:"template_id"`
+}
+
+// UnmarshalYAML implements the yaml.Unmarshaler interface.
+func (t *HWCConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	*t = DefaultHWCConfig
+	type plain HWCConfig
+
+	if err := unmarshal((*plain)(t)); err != nil {
+		return err
+	}
+	if len(t.Operators) == 0 {
+		return fmt.Errorf("missing to in telephone config")
+	}
+
+	return nil
+}
