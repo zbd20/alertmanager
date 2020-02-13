@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
@@ -78,9 +79,11 @@ func (n *Notifier) InitialAccessToken() error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		if resp.StatusCode/100 != 2 {
-			return fmt.Errorf("unexpected status code %v from %s", resp.StatusCode, url)
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			level.Error(n.logger).Log("err", err)
 		}
+		return fmt.Errorf("the response status code is %s, and body is %s", strconv.Itoa(resp.StatusCode), string(body))
 	}
 	var tokenResult TokenResult
 	if err := json.NewDecoder(resp.Body).Decode(&tokenResult); err != nil {
@@ -111,9 +114,11 @@ func (n *Notifier) RefreshAccessToken() error {
 	defer notify.Drain(resp)
 
 	if resp.StatusCode != http.StatusOK {
-		if resp.StatusCode/100 != 2 {
-			return fmt.Errorf("unexpected status code %v from %s", resp.StatusCode, url)
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			level.Error(n.logger).Log("err", err)
 		}
+		return fmt.Errorf("the response status code is %s, and body is %s", strconv.Itoa(resp.StatusCode), string(body))
 	}
 	var tokenResult TokenResult
 	if err := json.NewDecoder(resp.Body).Decode(&tokenResult); err != nil {
