@@ -13,13 +13,13 @@ var n *Notifier
 func init() {
 	n, _ = New(
 		&config.TelephoneConfig{
-			AppKey:        "4MaDaD3NH55UCcE7VrzzIicAgtP3",
-			AppSecret:     "8fx3qLQysC5N62K0sgLf08xY3ox2",
-			UserName:      "KuaiLeQie",
+			AppKey:        "",
+			AppSecret:     "",
+			UserName:      "",
 			Authorization: "",
-			BaseURL:       "https://rtcvc.cn-north-1.myhuaweicloud.com:10643",
+			BaseURL:       "",
 			DisplayNumber: "",
-			TemplateId:    "0ea04e1119104871944958272442d32f",
+			TemplateId:    "",
 			Operators:     []string{""},
 			HTTPConfig:    &commoncfg.HTTPClientConfig{},
 		},
@@ -46,7 +46,7 @@ func TestNotifier_RefreshAccessToken(t *testing.T) {
 }
 
 func TestNotifier_Send(t *testing.T) {
-	err := n.Send("18392505264")
+	err := n.Send("110")
 	if err != nil {
 		t.Error(err)
 	} else {
