@@ -432,32 +432,6 @@ func (c *Config) UnmarshalYAML(unmarshal func(interface{}) error) error {
 			}
 		}
 		for _, tc := range rcv.TelephoneConfigs {
-			/*
-				// 容联云
-				if tc.AccountSid == "" {
-					tc.AccountSid = c.Global.CloopenAccountSid
-				}
-				if tc.AccountToken == "" {
-					tc.AccountToken = c.Global.CloopenAccountToken
-				}
-				if tc.MediaTxt == "" {
-					tc.MediaTxt = c.Global.TelephoneMediaTxt
-				}
-				if tc.DisplayNum == "" {
-					tc.DisplayNum = c.Global.CloopenDisplayNum
-				}
-				if tc.AppID == "" {
-					tc.AppID = c.Global.CloopenAppID
-				}
-				// no use
-				if tc.BaseURL == "" {
-					tc.BaseURL = c.Global.CloopenBaseURL
-				}
-				// no use
-				if tc.Version == "" {
-					tc.Version = c.Global.CloopenVersion
-				}
-			*/
 			if tc.AppKey == "" {
 				tc.AppKey = c.Global.HWCAppKey
 			}
@@ -811,7 +785,7 @@ type Receiver struct {
 	VictorOpsConfigs []*VictorOpsConfig `yaml:"victorops_configs,omitempty" json:"victorops_configs,omitempty"`
 	DingRobotConfigs []*DingRobotConfig `yaml:"dingrobot_configs,omitempty" json:"dingrobot_configs,omitempty"`
 	DingAppConfigs   []*DingAppConfig   `yaml:"dingapp_configs,omitempty" json:"dingApp_configs,omitempty"`
-	TelephoneConfigs []*HWCConfig       `yaml:"telephone_configs,omitempty" json:"telephone_configs,omitempty"`
+	TelephoneConfigs []*TelephoneConfig `yaml:"telephone_configs,omitempty" json:"telephone_configs,omitempty"`
 }
 
 // UnmarshalYAML implements the yaml.Unmarshaler interface for Receiver.
