@@ -2,7 +2,7 @@ alerts1='[
   {
     "labels": {
        "alertname": "DiskRunningFull",
-       "group": "SGT",
+       "dev": "sda1",
        "instance": "example1"
      },
      "annotations": {
@@ -13,7 +13,7 @@ alerts1='[
   {
     "labels": {
        "alertname": "DiskRunningFull",
-       "group": "SGT",
+       "dev": "sda2",
        "instance": "example1"
      },
      "annotations": {
@@ -25,7 +25,7 @@ alerts1='[
   {
     "labels": {
        "alertname": "DiskRunningFull",
-       "group": "SGT",
+       "dev": "sda1",
        "instance": "example2"
      },
      "annotations": {
@@ -36,7 +36,7 @@ alerts1='[
   {
     "labels": {
        "alertname": "DiskRunningFull",
-       "group": "SGT",
+       "dev": "sdb2",
        "instance": "example2"
      },
      "annotations": {
@@ -47,21 +47,20 @@ alerts1='[
   {
     "labels": {
        "alertname": "DiskRunningFull",
-       "group": "SGT",
-       "command_group": "versionManagerService",
-       "severity": "2"
+       "dev": "sda1",
+       "instance": "example3",
+       "severity": "critical"
      }
   },
   {
     "labels": {
        "alertname": "DiskRunningFull",
-       "group": "SGT",
-       "command_group": "versionManagerService",
+       "dev": "sda1",
        "instance": "example3",
-       "severity": "1"
+       "severity": "warning"
      }
   }
 ]'
 curl -XPOST -d"$alerts1" http://localhost:9093/api/v1/alerts
-# curl -XPOST -d"$alerts1" http://localhost:9094/api/v1/alerts
-# curl -XPOST -d"$alerts1" http://localhost:9095/api/v1/alerts
+curl -XPOST -d"$alerts1" http://localhost:9094/api/v1/alerts
+curl -XPOST -d"$alerts1" http://localhost:9095/api/v1/alerts
