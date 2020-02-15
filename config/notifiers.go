@@ -668,17 +668,15 @@ func (c *DingAppConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
 type TelephoneConfig struct {
 	NotifierConfig `yaml:",inline" json:",inline"`
 
-	HTTPConfig *commoncfg.HTTPClientConfig `yaml:"http_config,omitempty" json:"http_config,omitempty"`
-
 	AppKey        string `yaml:"app_key,omitempty"  json:"app_key,omitempty"`
 	AppSecret     string `yaml:"app_secret,omitempty"  json:"app_secret,omitempty"`
 	UserName      string `yaml:"user_name,omitempty"  json:"user_name,omitempty"`
 	Authorization string `yaml:"authorization,omitempty"  json:"authorization,omitempty"`
 	BaseURL       string `yaml:"base_url,omitempty"  json:"base_url,omitempty"`
+	DisplayNumber string `yaml:"display_number"  json:"display_number"`
+	TemplateId    string `yaml:"template_id"  json:"template_id"`
 
-	Operators     []string `yaml:"operators"  json:"operators"`
-	DisplayNumber string   `yaml:"display_number"  json:"display_number"`
-	TemplateId    string   `yaml:"template_id"  json:"template_id"`
+	Operators []string `yaml:"operators"  json:"operators"`
 }
 
 // UnmarshalYAML implements the yaml.Unmarshaler interface.

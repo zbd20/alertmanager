@@ -15,7 +15,6 @@ import (
 	"github.com/prometheus/alertmanager/config"
 	"github.com/prometheus/alertmanager/notify"
 	"github.com/prometheus/alertmanager/types"
-	commoncfg "github.com/prometheus/common/config"
 )
 
 // Notifier implements a Notifier for voice notifications current.
@@ -48,14 +47,10 @@ type TokenResult struct {
 
 // New returns a new HuaWeiCloud notifier.
 func New(c *config.TelephoneConfig, l log.Logger) (*Notifier, error) {
-	client, err := commoncfg.NewClientFromConfig(*c.HTTPConfig, "telephone", false)
-	if err != nil {
-		return nil, err
-	}
-	n := Notifier{conf: c, logger: l, client: client}
+	n := Notifier{conf: c, logger: l, client: &http.Client{}}
 
 	// initial HuaWeiCloud voice notify access token
-	err = n.InitialAccessToken()
+	err := n.InitialAccessToken()
 	if err != nil {
 		return nil, err
 	}
