@@ -2,21 +2,19 @@ package dingrobot
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/go-kit/kit/log/level"
 	"net/http"
-	"context"
 
 	"github.com/go-kit/kit/log"
 	commoncfg "github.com/prometheus/common/config"
 
-	"github.com/prometheus/alertmanager/template"
 	"github.com/prometheus/alertmanager/config"
-	"github.com/prometheus/alertmanager/types"
 	"github.com/prometheus/alertmanager/notify"
-
-
+	"github.com/prometheus/alertmanager/template"
+	"github.com/prometheus/alertmanager/types"
 )
 
 type dingTalkNotification struct {
@@ -30,8 +28,8 @@ type dingTalkNotificationMarkdown struct {
 }
 
 type DingRobot struct {
-	conf *config.DingRobotConfig
-	tmpl *template.Template
+	conf   *config.DingRobotConfig
+	tmpl   *template.Template
 	logger log.Logger
 }
 
@@ -96,4 +94,3 @@ func (d *DingRobot) retry(statusCode int) (bool, error) {
 
 	return false, nil
 }
-
