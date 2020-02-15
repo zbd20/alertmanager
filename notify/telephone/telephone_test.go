@@ -12,15 +12,16 @@ import (
 var n *Notifier
 
 func init() {
+	// please use your authorization information
 	n = &Notifier{
 		conf: &config.TelephoneConfig{
 			AppKey:        "",
 			AppSecret:     "",
 			UserName:      "",
 			Authorization: "",
-			BaseURL:       "https://rtcvc.cn-north-1.myhuaweicloud.com:10643",
+			BaseURL:       "",
 			DisplayNumber: "",
-			TemplateId:    "0ea04e1119104871944958272442d32f",
+			TemplateId:    "",
 			Operators:     []string{""},
 			HTTPConfig:    &commoncfg.HTTPClientConfig{},
 		},
