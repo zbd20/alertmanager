@@ -15,6 +15,7 @@ import (
 	"github.com/prometheus/alertmanager/config"
 	"github.com/prometheus/alertmanager/notify"
 	"github.com/prometheus/alertmanager/types"
+	uuid "github.com/satori/go.uuid"
 )
 
 // Notifier implements a Notifier for voice notifications current.
@@ -50,16 +51,20 @@ func New(c *config.TelephoneConfig, l log.Logger) (*Notifier, error) {
 	n := Notifier{conf: c, logger: l, client: &http.Client{}}
 
 	// initial HuaWeiCloud voice notify access token
-	err := n.InitialAccessToken()
-	if err != nil {
-		return nil, err
-	}
+	/*
+		err := n.InitialAccessToken()
+		if err != nil {
+			return nil, err
+		}
+	*/
 
 	return &n, nil
 }
 
 func (n *Notifier) InitialAccessToken() error {
-	url := fmt.Sprintf("%s/rest/fastlogin/v1.0?app_key=%s&username=%s", n.conf.BaseURL, n.conf.AppKey, n.conf.UserName)
+	level.Info(n.logger).Log("msg", "call huawei cloud voice notify API to initial access token")
+	u := uuid.NewV4().String()
+	url := fmt.Sprintf("%s/rest/fastlogin/v1.0?app_key=%s&username=%s&device_id=%s", n.conf.BaseURL, n.conf.AppKey, n.conf.UserName, u)
 	req, err := http.NewRequest(http.MethodPost, url, nil)
 	if err != nil {
 		return err
@@ -131,8 +136,14 @@ func (n *Notifier) RefreshAccessToken() error {
 
 // Notify implements the Notifier interface.
 func (n *Notifier) Notify(ctx context.Context, as ...*types.Alert) (bool, error) {
+	if n.accessToken == "" {
+		err := n.InitialAccessToken()
+		if err != nil {
+			return true, err
+		}
+	}
 	// Refresh AccessToken over 47 hours
-	if n.accessToken == "" || time.Since(n.accessTokenAt) > 47*time.Hour {
+	if time.Since(n.accessTokenAt) > 47*time.Hour {
 		err := n.RefreshAccessToken()
 		if err != nil {
 			return true, err
