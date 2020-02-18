@@ -5,16 +5,21 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/go-kit/kit/log/level"
 	"net/http"
+	"strings"
 
 	"github.com/go-kit/kit/log"
-	commoncfg "github.com/prometheus/common/config"
-
+	"github.com/go-kit/kit/log/level"
 	"github.com/prometheus/alertmanager/config"
 	"github.com/prometheus/alertmanager/notify"
 	"github.com/prometheus/alertmanager/template"
 	"github.com/prometheus/alertmanager/types"
+	commoncfg "github.com/prometheus/common/config"
+	"github.com/prometheus/common/model"
+)
+
+const (
+	DingtalkRobotOncallKey = "oncall"
 )
 
 type dingTalkNotification struct {
@@ -41,6 +46,15 @@ func New(c *config.DingRobotConfig, t *template.Template, l log.Logger) (*DingRo
 // Notify implements the Notifier interface.
 func (d *DingRobot) Notify(ctx context.Context, as ...*types.Alert) (bool, error) {
 	level.Debug(d.logger).Log("start to send ding robot")
+
+	// deal with oncall
+	for _, t := range as {
+		if len(d.conf.Operators) > 0 {
+			t.Labels[DingtalkRobotOncallKey] = model.LabelValue(strings.Join(d.conf.Operators, ","))
+		}
+
+	}
+
 	var (
 		tmplErr error
 		data    = notify.GetTemplateData(ctx, d.tmpl, as, d.logger)

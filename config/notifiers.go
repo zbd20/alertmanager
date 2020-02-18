@@ -624,6 +624,8 @@ type DingRobotConfig struct {
 	WebhookURL string `yaml:"webhook_url,omitempty" json:"webhook_url,omitempty"`
 	Title      string `yaml:"title,omitempty"  json:"title,omitempty"`
 	Content    string `yaml:"content,omitempty"  json:"content,omitempty"`
+
+	Operators []string `yaml:"operators,omitempty"  json:"operators,omitempty"`
 }
 
 // UnmarshalYAML implements the yaml.Unmarshaler interface.
