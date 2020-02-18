@@ -6,7 +6,6 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/prometheus/alertmanager/config"
-	commoncfg "github.com/prometheus/common/config"
 )
 
 var n *Notifier
@@ -23,7 +22,6 @@ func init() {
 			DisplayNumber: "",
 			TemplateId:    "",
 			Operators:     []string{""},
-			HTTPConfig:    &commoncfg.HTTPClientConfig{},
 		},
 		client: &http.Client{},
 		logger: log.NewNopLogger(),
