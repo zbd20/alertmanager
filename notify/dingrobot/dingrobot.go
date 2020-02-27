@@ -47,17 +47,33 @@ func New(c *config.DingRobotConfig, t *template.Template, l log.Logger) (*DingRo
 func (d *DingRobot) Notify(ctx context.Context, as ...*types.Alert) (bool, error) {
 	level.Debug(d.logger).Log("start to send ding robot")
 
+	newAs := make([]*types.Alert, len(as), len(as))
+
 	// deal with oncall
-	for _, t := range as {
-		if len(d.conf.Operators) > 0 {
-			t.Labels[DingtalkRobotOncallKey] = model.LabelValue(strings.Join(d.conf.Operators, ","))
+	for _, a := range as {
+		newa := &types.Alert{
+			Alert: model.Alert{
+				Labels:       a.Labels,
+				Annotations:  a.Annotations,
+				StartsAt:     a.StartsAt,
+				EndsAt:       a.EndsAt,
+				GeneratorURL: a.GeneratorURL,
+			},
+			UpdatedAt: a.UpdatedAt,
+			Timeout:   a.Timeout,
 		}
+
+		if len(d.conf.Operators) > 0 {
+			newa.Labels[DingtalkRobotOncallKey] = model.LabelValue(strings.Join(d.conf.Operators, ","))
+		}
+
+		newAs = append(newAs, newa)
 
 	}
 
 	var (
 		tmplErr error
-		data    = notify.GetTemplateData(ctx, d.tmpl, as, d.logger)
+		data    = notify.GetTemplateData(ctx, d.tmpl, newAs, d.logger)
 		tmpl    = notify.TmplText(d.tmpl, data, &tmplErr)
 		title   = tmpl(d.conf.Title)
 		content = tmpl(d.conf.Content)
