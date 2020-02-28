@@ -47,7 +47,7 @@ func New(c *config.DingRobotConfig, t *template.Template, l log.Logger) (*DingRo
 func (d *DingRobot) Notify(ctx context.Context, as ...*types.Alert) (bool, error) {
 	level.Debug(d.logger).Log("start to send ding robot")
 
-	newAs := make([]*types.Alert, len(as), len(as))
+	var newAs []*types.Alert
 
 	// deal with oncall
 	for _, a := range as {
