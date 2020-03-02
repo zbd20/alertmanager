@@ -53,8 +53,8 @@ func (d *DingRobot) Notify(ctx context.Context, as ...*types.Alert) (bool, error
 	for _, a := range as {
 		newa := &types.Alert{
 			Alert: model.Alert{
-				Labels:       a.Labels,
-				Annotations:  a.Annotations,
+				Labels:       a.Labels.Clone(),
+				Annotations:  a.Annotations.Clone(),
 				StartsAt:     a.StartsAt,
 				EndsAt:       a.EndsAt,
 				GeneratorURL: a.GeneratorURL,
