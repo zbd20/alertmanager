@@ -265,6 +265,9 @@ func (c *Config) UnmarshalYAML(unmarshal func(interface{}) error) error {
 			}
 		}
 		for _, ec := range rcv.EmailConfigs {
+			if ec.HTTPConfig == nil {
+				ec.HTTPConfig = c.Global.HTTPConfig
+			}
 			if ec.Smarthost.String() == "" {
 				if c.Global.SMTPSmarthost.String() == "" {
 					return fmt.Errorf("no global SMTP smarthost set")
@@ -421,6 +424,9 @@ func (c *Config) UnmarshalYAML(unmarshal func(interface{}) error) error {
 			}
 		}
 		for _, ac := range rcv.DingAppConfigs {
+			if ac.HTTPConfig == nil {
+				ac.HTTPConfig = c.Global.HTTPConfig
+			}
 			if ac.AgentID == "" {
 				ac.AgentID = c.Global.DingtalkAgentID
 			}
@@ -432,6 +438,9 @@ func (c *Config) UnmarshalYAML(unmarshal func(interface{}) error) error {
 			}
 		}
 		for _, tc := range rcv.TelephoneConfigs {
+			if tc.HTTPConfig == nil {
+				tc.HTTPConfig = c.Global.HTTPConfig
+			}
 			if tc.AppKey == "" {
 				tc.AppKey = c.Global.HWCAppKey
 			}

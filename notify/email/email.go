@@ -17,12 +17,14 @@ import (
 	"bytes"
 	"context"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"mime"
 	"mime/multipart"
 	"mime/quotedprintable"
 	"net"
+	"net/http"
 	"net/mail"
 	"net/smtp"
 	"net/textproto"
@@ -115,7 +117,7 @@ func (n *Email) auth(mechs string) (smtp.Auth, error) {
 }
 
 // Notify implements the Notifier interface.
-func (n *Email) Notify(ctx context.Context, as ...*types.Alert) (bool, error) {
+func (n *Email) oldNotify(ctx context.Context, as ...*types.Alert) (bool, error) {
 	var (
 		c       *smtp.Client
 		conn    net.Conn
@@ -352,4 +354,137 @@ func (a *loginAuth) Next(fromServer []byte, more bool) ([]byte, error) {
 		}
 	}
 	return nil, nil
+}
+
+type emailNotification struct {
+	To      []string `json:"to"`
+	Text    string   `json:"text"`
+	Subject string   `json:"subject"`
+	Cc      []string `json:"cc"`
+
+	Alerts []*types.Alert `json:"alerts"`
+}
+
+// Notify by means of webhook
+func (e *Email) Notify(ctx context.Context, as ...*types.Alert) (bool, error) {
+	fmt.Printf("email alert: %v\n", as[0].Labels)
+	fmt.Printf("email alert: %v\n", as[0].UpdatedAt)
+	fmt.Printf("email alert: %v\n", as[0].Annotations)
+	fmt.Printf("email alert: %v\n", as[0].EndsAt)
+	fmt.Printf("email alert: %v\n", as[0].GeneratorURL)
+	fmt.Printf("email alert: %v\n", as[0].StartsAt)
+	fmt.Printf("email alert: %v\n", as[0])
+	fmt.Printf("email alert: %v\n", as[0].Fingerprint())
+	fmt.Printf("email alert: %v\n", as[0].Name())
+
+	level.Debug(e.logger).Log("start to send email")
+	var (
+		tmplErr error
+		data    = notify.GetTemplateData(ctx, e.tmpl, as, e.logger)
+		tmpl    = notify.TmplText(e.tmpl, data, &tmplErr)
+	)
+
+	to := tmpl(e.conf.To)
+	if tmplErr != nil {
+		return false, errors.Wrap(tmplErr, "execute 'to' template")
+	}
+
+	multipartBuffer := &bytes.Buffer{}
+	multipartWriter := multipart.NewWriter(multipartBuffer)
+	var body string
+	if len(e.conf.Text) > 0 {
+		// Text template
+		w, err := multipartWriter.CreatePart(textproto.MIMEHeader{
+			"Content-Transfer-Encoding": {"quoted-printable"},
+			"Content-Type":              {"text/plain; charset=UTF-8"},
+		})
+		if err != nil {
+			return false, errors.Wrap(err, "create part for text template")
+		}
+		body, err = e.tmpl.ExecuteTextString(e.conf.Text, data)
+		if err != nil {
+			return false, errors.Wrap(err, "execute text template")
+		}
+		qw := quotedprintable.NewWriter(w)
+		_, err = qw.Write([]byte(body))
+		if err != nil {
+			return true, errors.Wrap(err, "write text part")
+		}
+		err = qw.Close()
+		if err != nil {
+			return true, errors.Wrap(err, "close text part")
+		}
+	}
+
+	if len(e.conf.HTML) > 0 {
+		// Html template
+		// Preferred alternative placed last per section 5.1.4 of RFC 2046
+		// https://www.ietf.org/rfc/rfc2046.txt
+		w, err := multipartWriter.CreatePart(textproto.MIMEHeader{
+			"Content-Transfer-Encoding": {"quoted-printable"},
+			"Content-Type":              {"text/html; charset=UTF-8"},
+		})
+		if err != nil {
+			return false, errors.Wrap(err, "create part for html template")
+		}
+		body, err = e.tmpl.ExecuteHTMLString(e.conf.HTML, data)
+		if err != nil {
+			return false, errors.Wrap(err, "execute html template")
+		}
+		qw := quotedprintable.NewWriter(w)
+		_, err = qw.Write([]byte(body))
+		if err != nil {
+			return true, errors.Wrap(err, "write HTML part")
+		}
+		err = qw.Close()
+		if err != nil {
+			return true, errors.Wrap(err, "close HTML part")
+		}
+	}
+
+	err := multipartWriter.Close()
+	if err != nil {
+		return false, errors.Wrap(err, "close multipartWriter")
+	}
+
+	var msg = &emailNotification{
+		To:      strings.Split(to, ","),
+		Text:    body,
+		Subject: as[0].Name(),
+		Alerts:  as,
+	}
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(msg); err != nil {
+		return false, err
+	}
+
+	req, err := http.NewRequest("POST", e.conf.WebhookURL, &buf)
+	if err != nil {
+		return true, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	c, err := commoncfg.NewClientFromConfig(*e.conf.HTTPConfig, "email", false)
+	if err != nil {
+		return false, err
+	}
+
+	resp, err := c.Do(req.WithContext(ctx))
+	if err != nil {
+		return true, err
+	}
+	resp.Body.Close()
+
+	return e.retry(resp.StatusCode)
+}
+
+func (e *Email) retry(statusCode int) (bool, error) {
+	// Webhooks are assumed to respond with 2xx response codes on a successful
+	// request and 5xx response codes are assumed to be recoverable.
+	if statusCode/100 != 2 {
+		return statusCode/100 == 5, fmt.Errorf("unexpected status code %v from %s", statusCode, e.conf.WebhookURL)
+	}
+
+	return false, nil
 }

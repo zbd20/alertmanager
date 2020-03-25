@@ -1,6 +1,7 @@
 package telephone
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -15,6 +16,7 @@ import (
 	"github.com/prometheus/alertmanager/config"
 	"github.com/prometheus/alertmanager/notify"
 	"github.com/prometheus/alertmanager/types"
+	commoncfg "github.com/prometheus/common/config"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -135,7 +137,7 @@ func (n *Notifier) RefreshAccessToken() error {
 }
 
 // Notify implements the Notifier interface.
-func (n *Notifier) Notify(ctx context.Context, as ...*types.Alert) (bool, error) {
+func (n *Notifier) oldNotify(ctx context.Context, as ...*types.Alert) (bool, error) {
 	if n.accessToken == "" {
 		err := n.InitialAccessToken()
 		if err != nil {
@@ -158,6 +160,38 @@ func (n *Notifier) Notify(ctx context.Context, as ...*types.Alert) (bool, error)
 			continue
 		}
 	}
+
+	return false, nil
+}
+
+type telephoneMsg struct {
+	Alerts []*types.Alert `json:"alerts"`
+}
+
+// Notify by means of webhook
+func (n *Notifier) Notify(ctx context.Context, as ...*types.Alert) (bool, error) {
+	fmt.Printf("telephone alert: %v\n", as)
+	var buf bytes.Buffer
+	var msg = &telephoneMsg{Alerts: as}
+	if err := json.NewEncoder(&buf).Encode(msg); err != nil {
+		return false, err
+	}
+	req, err := http.NewRequest("POST", n.conf.WebhookURL, &buf)
+	if err != nil {
+		return true, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	c, err := commoncfg.NewClientFromConfig(*n.conf.HTTPConfig, "telephone", false)
+	if err != nil {
+		return false, err
+	}
+
+	resp, err := c.Do(req.WithContext(ctx))
+	if err != nil {
+		return true, err
+	}
+	resp.Body.Close()
 
 	return false, nil
 }

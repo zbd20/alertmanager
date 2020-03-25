@@ -25,6 +25,7 @@ const (
 type dingTalkNotification struct {
 	MessageType string                        `json:"msgtype"`
 	Markdown    *dingTalkNotificationMarkdown `json:"markdown,omitempty"`
+	Alerts      []*types.Alert                `json:"alerts"`
 }
 
 type dingTalkNotificationMarkdown struct {
@@ -68,7 +69,6 @@ func (d *DingRobot) Notify(ctx context.Context, as ...*types.Alert) (bool, error
 		}
 
 		newAs = append(newAs, newa)
-
 	}
 
 	var (
@@ -88,6 +88,7 @@ func (d *DingRobot) Notify(ctx context.Context, as ...*types.Alert) (bool, error
 			Title: title,
 			Text:  content,
 		},
+		Alerts: newAs,
 	}
 
 	var buf bytes.Buffer

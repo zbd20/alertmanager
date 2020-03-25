@@ -193,6 +193,10 @@ type EmailConfig struct {
 	Text         string              `yaml:"text,omitempty" json:"text,omitempty"`
 	RequireTLS   *bool               `yaml:"require_tls,omitempty" json:"require_tls,omitempty"`
 	TLSConfig    commoncfg.TLSConfig `yaml:"tls_config,omitempty" json:"tls_config,omitempty"`
+
+	// webhook
+	HTTPConfig *commoncfg.HTTPClientConfig `yaml:"http_config,omitempty" json:"http_config,omitempty"`
+	WebhookURL string `yaml:"webhook_url,omitempty" json:"webhook_url,omitempty"`
 }
 
 // UnmarshalYAML implements the yaml.Unmarshaler interface.
@@ -652,6 +656,10 @@ type DingAppConfig struct {
 	Operators []string `yaml:"operators"  json:"operators"`
 	Title     string   `yaml:"title,omitempty"  json:"title,omitempty"`
 	Content   string   `yaml:"content,omitempty"  json:"content,omitempty"`
+
+	// webhook
+	WebhookURL string `yaml:"webhook_url,omitempty" json:"webhook_url,omitempty"`
+	HTTPConfig *commoncfg.HTTPClientConfig `yaml:"http_config,omitempty" json:"http_config,omitempty"`
 }
 
 // UnmarshalYAML implements the yaml.Unmarshaler interface.
@@ -679,6 +687,9 @@ type TelephoneConfig struct {
 	TemplateId    string `yaml:"template_id"  json:"template_id"`
 
 	Operators []string `yaml:"operators"  json:"operators"`
+	// webhook
+	HTTPConfig *commoncfg.HTTPClientConfig `yaml:"http_config,omitempty" json:"http_config,omitempty"`
+	WebhookURL string `yaml:"webhook_url,omitempty" json:"webhook_url,omitempty"`
 }
 
 // UnmarshalYAML implements the yaml.Unmarshaler interface.
