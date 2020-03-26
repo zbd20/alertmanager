@@ -79,7 +79,7 @@ func (d *DingApp) Notify(ctx context.Context, as ...*types.Alert) (bool, error) 
 		data    = notify.GetTemplateData(ctx, d.tmpl, as, d.logger)
 		tmpl    = notify.TmplText(d.tmpl, data, &tmplErr)
 		title   = tmpl(d.conf.Title)
-		content = tmpl(d.conf.Content) + "\n" + time.Now().Format("2006-01-02 15:04:05")
+		content = tmpl(d.conf.Content)
 	)
 	if tmplErr != nil {
 		return false, fmt.Errorf("failed to template 'title' or 'content': %v", tmplErr)

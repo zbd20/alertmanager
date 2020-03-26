@@ -19,6 +19,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"html"
 	"math/rand"
 	"mime"
 	"mime/multipart"
@@ -449,7 +450,7 @@ func (e *Email) Notify(ctx context.Context, as ...*types.Alert) (bool, error) {
 
 	var msg = &emailNotification{
 		To:      strings.Split(to, ","),
-		Text:    body,
+		Text:    html.UnescapeString(body),
 		Subject: as[0].Name(),
 		Alerts:  as,
 	}
