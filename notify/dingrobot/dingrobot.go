@@ -25,12 +25,18 @@ const (
 type dingTalkNotification struct {
 	MessageType string                        `json:"msgtype"`
 	Markdown    *dingTalkNotificationMarkdown `json:"markdown,omitempty"`
+	At          *At                           `json:"at,omitempty"`
 	Alerts      []*types.Alert                `json:"alerts"`
 }
 
 type dingTalkNotificationMarkdown struct {
 	Title string `json:"title"`
 	Text  string `json:"text"`
+}
+
+type At struct {
+	AtMobiles []string `json:"atMobiles"`
+	IsAtAll   bool     `json:"isAtAll"`
 }
 
 type DingRobot struct {
@@ -49,6 +55,7 @@ func (d *DingRobot) Notify(ctx context.Context, as ...*types.Alert) (bool, error
 	level.Debug(d.logger).Log("start to send ding robot")
 
 	var newAs []*types.Alert
+	var atUser string
 
 	// deal with oncall
 	for _, a := range as {
@@ -66,6 +73,9 @@ func (d *DingRobot) Notify(ctx context.Context, as ...*types.Alert) (bool, error
 
 		if len(d.conf.Operators) > 0 {
 			newa.Labels[DingtalkRobotOncallKey] = model.LabelValue(strings.Join(d.conf.Operators, ","))
+			for _, op := range d.conf.Operators {
+				atUser += "@" + op
+			}
 		}
 
 		newAs = append(newAs, newa)
@@ -87,6 +97,10 @@ func (d *DingRobot) Notify(ctx context.Context, as ...*types.Alert) (bool, error
 		Markdown: &dingTalkNotificationMarkdown{
 			Title: title,
 			Text:  content,
+		},
+		At: &At{
+			AtMobiles: d.conf.Operators,
+			IsAtAll:   false,
 		},
 		Alerts: newAs,
 	}

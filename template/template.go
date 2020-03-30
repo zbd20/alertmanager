@@ -144,6 +144,9 @@ var DefaultFuncs = FuncMap{
 	"stringSlice": func(s ...string) []string {
 		return s
 	},
+	"split": func(s string, sep string) []string {
+		return strings.Split(s,sep)
+	},
 }
 
 // Pair is a key/value string pair.
