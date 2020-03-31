@@ -4,7 +4,7 @@
 {{ define "__text_common_labels" }}
 **公共标签:**
 {{ range . }}
-{{if ne .Name "alertname" or ne .Name "oncall" }}> - {{ .Name }}: {{ .Value | html }}{{end}}{{ end }}{{ end }}
+{{if and (ne .Name "alertname") (ne .Name "oncall") }}> - {{ .Name }}: {{ .Value | html }}{{end}}{{ end }}{{ end }}
 {{ define "__text_alert_list" }}
 {{ $commonLabels := .CommonLabels}}
 {{ range .Alerts.Firing }}
