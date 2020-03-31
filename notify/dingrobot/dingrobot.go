@@ -53,7 +53,6 @@ func New(c *config.DingRobotConfig, t *template.Template, l log.Logger) (*DingRo
 // Notify implements the Notifier interface.
 func (d *DingRobot) Notify(ctx context.Context, as ...*types.Alert) (bool, error) {
 	level.Debug(d.logger).Log("start to send ding robot")
-
 	var newAs []*types.Alert
 	var atUser string
 
@@ -77,7 +76,6 @@ func (d *DingRobot) Notify(ctx context.Context, as ...*types.Alert) (bool, error
 				atUser += "@" + op
 			}
 		}
-
 		newAs = append(newAs, newa)
 	}
 
@@ -88,6 +86,8 @@ func (d *DingRobot) Notify(ctx context.Context, as ...*types.Alert) (bool, error
 		title   = tmpl(d.conf.Title)
 		content = tmpl(d.conf.Content)
 	)
+	fmt.Println("DDDDLLLLLL",data.CommonLabels)
+	fmt.Println("GGGGGGGGLL",data.GroupLabels)
 	if tmplErr != nil {
 		return false, fmt.Errorf("failed to template 'title' or 'content': %v", tmplErr)
 	}

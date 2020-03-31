@@ -72,8 +72,6 @@ func (d *DingApp) oldNotify(ctx context.Context, as ...*types.Alert) (bool, erro
 
 // Notify by means of webhook
 func (d *DingApp) Notify(ctx context.Context, as ...*types.Alert) (bool, error) {
-
-	fmt.Printf("dingApp alert: %v\n", as)
 	var (
 		tmplErr error
 		data    = notify.GetTemplateData(ctx, d.tmpl, as, d.logger)

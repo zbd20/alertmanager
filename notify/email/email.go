@@ -368,16 +368,6 @@ type emailNotification struct {
 
 // Notify by means of webhook
 func (e *Email) Notify(ctx context.Context, as ...*types.Alert) (bool, error) {
-	fmt.Printf("email alert: %v\n", as[0].Labels)
-	fmt.Printf("email alert: %v\n", as[0].UpdatedAt)
-	fmt.Printf("email alert: %v\n", as[0].Annotations)
-	fmt.Printf("email alert: %v\n", as[0].EndsAt)
-	fmt.Printf("email alert: %v\n", as[0].GeneratorURL)
-	fmt.Printf("email alert: %v\n", as[0].StartsAt)
-	fmt.Printf("email alert: %v\n", as[0])
-	fmt.Printf("email alert: %v\n", as[0].Fingerprint())
-	fmt.Printf("email alert: %v\n", as[0].Name())
-
 	level.Debug(e.logger).Log("start to send email")
 	var (
 		tmplErr error
