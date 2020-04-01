@@ -25,6 +25,7 @@ const (
 type dingTalkNotification struct {
 	MessageType string                        `json:"msgtype"`
 	Markdown    *dingTalkNotificationMarkdown `json:"markdown,omitempty"`
+	ActionCard  *ActionCard                   `json:"actionCard,omitempty"`
 	At          *At                           `json:"at,omitempty"`
 	Alerts      []*types.Alert                `json:"alerts"`
 }
@@ -32,6 +33,14 @@ type dingTalkNotification struct {
 type dingTalkNotificationMarkdown struct {
 	Title string `json:"title"`
 	Text  string `json:"text"`
+}
+
+type ActionCard struct {
+	Title          string                   `json:"title"`
+	Text           string                   `json:"text"`
+	Btns           []map[string]interface{} `json:"btns"`
+	HideAvatar     string                   `json:"hideAvatar"`
+	BtnOrientation string                   `json:"btnOrientation"`
 }
 
 type At struct {
@@ -86,19 +95,41 @@ func (d *DingRobot) Notify(ctx context.Context, as ...*types.Alert) (bool, error
 		title   = tmpl(d.conf.Title)
 		content = tmpl(d.conf.Content)
 	)
-	fmt.Println("DDDDLLLLLL",data.CommonLabels)
-	fmt.Println("GGGGGGGGLL",data.GroupLabels)
+
 	if tmplErr != nil {
 		return false, fmt.Errorf("failed to template 'title' or 'content': %v", tmplErr)
 	}
 
-	var msg = &dingTalkNotification{
-		MessageType: "markdown",
-		Markdown: &dingTalkNotificationMarkdown{
-			Title: title,
-			Text:  content,
+	//var msg = &dingTalkNotification{
+	//	MessageType: "markdown",
+	//	Markdown: &dingTalkNotificationMarkdown{
+	//		Title: title,
+	//		Text:  content,
+	//	},
+	//	At: &At{
+	//		AtMobiles: d.conf.Operators,
+	//		IsAtAll:   false,
+	//	},
+	//	Alerts: newAs,
+	//}
+
+	btns := []map[string]interface{}{
+		{
+			"title":"静默",
+			"actionURL": "http://shareit:9093/#/alerts",
 		},
-		At: &At{
+	}
+
+	var msg = &dingTalkNotification{
+		MessageType: "actionCard",
+		ActionCard:  &ActionCard{
+			Title:          title,
+			Text:           content,
+			Btns:           btns,
+			HideAvatar:     "0",
+			BtnOrientation: "0",
+		},
+		At:          &At{
 			AtMobiles: d.conf.Operators,
 			IsAtAll:   false,
 		},

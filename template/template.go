@@ -145,7 +145,10 @@ var DefaultFuncs = FuncMap{
 		return s
 	},
 	"split": func(s string, sep string) []string {
-		return strings.Split(s,sep)
+		return strings.Split(s, sep)
+	},
+	"andN": func(m, n int) int {
+		return m + n
 	},
 }
 
